@@ -1,5 +1,6 @@
 'use client'
 import ToggleDarkMode from '../components/ToggleDarkMode';
+import InsertPopup from '../components/event/Insert';
 import React, { useEffect, useState } from 'react';
 
 export default function Home () {
@@ -8,6 +9,10 @@ export default function Home () {
   const [currentDate, setCurrentDate] = useState('');
   const [calendarTitle, setcalendarTitle] = useState('');
   const [calendarDates, setCalendarDates] = useState([]);
+
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [isPopupOpen, setPopupOpen] = useState(false);
+  const [events, setEvents] = useState([]);
   /* End of global state */
 
   /* Dark mode script */
@@ -70,10 +75,34 @@ export default function Home () {
 
   /* End of date script */
 
+  /* Reset all */
+  const handleReset = () => {
+    localStorage.clear();
+    window.location.reload();
+  };
+  /* End of reset all */
+
+  /* Insert popup */
+  const handleDateClick = (date) => {
+    setSelectedDate(date.getDate());
+    setPopupOpen(true);
+  };
+
+  const handlePopupClose = () => {
+    setSelectedDate(null);
+    setPopupOpen(false);
+  };
+
+  const handleSaveEvent = (event) => {
+    setEvents([...events, event]);
+    localStorage.setItem('data', JSON.stringify(events));
+  };
+  /* End of insert popup */
+
   return (
     <main className={`${darkMode ? 'dark' : ''}`}>
-      <div className='bg-white dark:bg-black w-screen h-screen overflow-auto p-4 md:p-8'>
-        <div className='flex flex-row flex-wrap flex-wrap justify-between'>
+      <div className='bg-white w-screen h-screen overflow-auto p-4 md:p-8 dark:bg-black lg:grid xl:justify-items-center lg:content-start'>
+        <div className='flex flex-row flex-wrap flex-wrap justify-between lg:max-w-6xl'>
           <h1 className="mb-4 text-2xl font-extrabold leading-none tracking-tight text-gray-900 w-72 md:text-3xl md:w-96 lg:text-4xl lg:w-fit dark:text-white">Manage your event with <span className="text-light-primary">DSS Calendar</span> Online.</h1>
           <div className='grid content-center'>
             <ToggleDarkMode darkMode={darkMode} toggleDarkMode={handleToggleDarkMode} />
@@ -81,12 +110,14 @@ export default function Home () {
         </div>
 
         {/* Calendar */}
-        <div className="mt-10">
+        <div className="my-10 lg:max-w-6xl">
           <div className="wrapper bg-light-primary rounded shadow w-full">
-            <div className="header flex justify-center border-b p-2 dark:bg-light-primary">
-              <span className="text-3xl font-bold text-white">
+            <div className="header flex justify-between border-b p-2 dark:bg-light-primary">
+              <button type="button" className="text-white hover:text-white border border-white hover:bg-red-600 hover:border-red-600 focus:outline-none focus:ring-red-600 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2" onClick={handleReset}>Reset</button>
+              <span className="text-3xl font-bold text-white my-auto">
                 {calendarTitle}
               </span>
+              <button type="button" className="text-white hover:text-white border border-white hover:bg-green-400 hover:border-green-400 focus:outline-none focus:ring-green-400 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Insert</button>
             </div>
             <table className="w-full bg-white text-black dark:bg-black dark:text-white">
               <thead>
@@ -129,7 +160,8 @@ export default function Home () {
                       {calendarDates.slice(index, index + 7).map((day, i) => (
                         <td
                           key={i}
-                          className={`border p-1 h-40 xl:w-40 lg:w-30 md:w-30 sm:w-20 w-10 relative transition cursor-pointer duration-500 ease hover:bg-gray-300`}
+                          className={`border p-1 h-40 xl:w-40 lg:w-30 md:w-30 sm:w-20 w-10 relative transition cursor-pointer duration-500 ease hover:bg-gray-300 hover:dark:bg-gray-600`}
+                          onClick={() => handleDateClick(day)}
                         >
                           {day ? (
                             <>
@@ -150,6 +182,17 @@ export default function Home () {
             </table>
           </div>
         </div>
+
+        {/* Insert Popup */}
+        {isPopupOpen && (
+          <InsertPopup
+            selectedDate={selectedDate}
+            onClose={handlePopupClose}
+            onSave={handleSaveEvent}
+          />
+        )}
+
+        <div className='text-black text-sm text-right dark:text-white'>Made by <a target="_blank" href='https://linkedin.com/in/stephanie-b439a6204' rel="noopener noreferrer">Stephanie</a></div>
       </div>
     </main>
   );
