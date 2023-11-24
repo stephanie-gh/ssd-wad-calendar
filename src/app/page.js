@@ -77,14 +77,16 @@ export default function Home () {
 
   /* Reset all */
   const handleReset = () => {
-    localStorage.clear();
+    // localStorage.clear();
     window.location.reload();
   };
   /* End of reset all */
 
   /* Insert popup */
+  const maxEventsPerDay = 3;
+
   const handleDateClick = (date) => {
-    setSelectedDate(date.getDate());
+    setSelectedDate(date);
     setPopupOpen(true);
   };
 
@@ -94,10 +96,50 @@ export default function Home () {
   };
 
   const handleSaveEvent = (event) => {
-    setEvents([...events, event]);
-    localStorage.setItem('data', JSON.stringify(events));
+    setEvents((prevEvents) => {
+      const updatedEvents = [...prevEvents, event];
+      const existingEvents = JSON.parse(localStorage.getItem('data')) || [];
+      const combinedEvents = [...existingEvents, ...updatedEvents];
+
+      localStorage.setItem('data', JSON.stringify(combinedEvents));
+
+      return combinedEvents;
+    });
   };
+
+  useEffect(() => {
+    if (events.length > 0) {
+      localStorage.setItem('data', JSON.stringify(events));
+    }
+  }, [events]);
   /* End of insert popup */
+
+  /* Styling needs */
+  function formatTimeIn12Hour (time) {
+    const [hours, minutes] = time.split(':');
+    const formattedHours = parseInt(hours, 10) % 12 || 12;
+    const period = parseInt(hours, 10) >= 12 ? 'PM' : 'AM';
+    return `${formattedHours}:${minutes} ${period}`;
+  }
+
+  const getRandomColor = () => {
+    const letters = '0123456789ABCDEF';
+    let color = '#';
+    for (let i = 0; i < 6; i++) {
+      color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+  };
+
+  const usedColors = {};
+  /* End of styling needs */
+
+  /* Get events from localStorage on page load */
+  useEffect(() => {
+    const storedEvents = JSON.parse(localStorage.getItem('data')) || [];
+    setEvents(storedEvents);
+  }, []);
+  /* End of get events from localStorage */
 
   return (
     <main className={`${darkMode ? 'dark' : ''}`}>
@@ -117,7 +159,7 @@ export default function Home () {
               <span className="text-3xl font-bold text-white my-auto">
                 {calendarTitle}
               </span>
-              <button type="button" className="text-white hover:text-white border border-white hover:bg-green-400 hover:border-green-400 focus:outline-none focus:ring-green-400 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Insert</button>
+              <button type="button" className="text-white hover:text-white border border-white hover:bg-green-400 hover:border-green-400 focus:outline-none focus:ring-green-400 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Menu</button>
             </div>
             <table className="w-full bg-white text-black dark:bg-black dark:text-white">
               <thead>
@@ -157,24 +199,64 @@ export default function Home () {
                 {calendarDates.map((date, index) => (
                   index % 7 === 0 ? (
                     <tr className="text-center h-20" key={index}>
-                      {calendarDates.slice(index, index + 7).map((day, i) => (
-                        <td
-                          key={i}
-                          className={`border p-1 h-40 xl:w-40 lg:w-30 md:w-30 sm:w-20 w-10 relative transition cursor-pointer duration-500 ease hover:bg-gray-300 hover:dark:bg-gray-600`}
-                          onClick={() => handleDateClick(day)}
-                        >
-                          {day ? (
-                            <>
-                              {isCurrentDate(day) && (
-                                <div className="absolute top-1 left-1 w-8 h-8 bg-red-500 rounded-full text-white flex items-center justify-center">
-                                  {day.getDate()}
-                                </div>
-                              )}
-                              {!isCurrentDate(day) && <div className="absolute top-2 left-2">{day.getDate()}</div>}
-                            </>
-                          ) : ''}
-                        </td>
-                      ))}
+                      {calendarDates.slice(index, index + 7).map((day, i) => {
+                        const eventsForDay = events
+                          .filter(event => {
+                            const eventDate = new Date(event.date);
+                            const dayDate = day ? new Date(day) : null;
+
+                            return day && eventDate.getDate() === dayDate.getDate() &&
+                              eventDate.getMonth() === dayDate.getMonth() &&
+                              eventDate.getFullYear() === dayDate.getFullYear();
+                          })
+                          .sort((a, b) => parseInt(a.time.replace(':', ''), 10) - parseInt(b.time.replace(':', ''), 10));
+
+                        const isMaxEventsReached = eventsForDay.length >= maxEventsPerDay;
+
+                        return (
+                          <td
+                            key={i}
+                            className={`border p-1 h-60 xl:w-40 lg:w-30 md:w-30 sm:w-20 w-10 relative transition cursor-pointer duration-500 ease hover:bg-gray-300 hover:dark:bg-gray-600`}
+                            onClick={() => !isMaxEventsReached && handleDateClick(day)}
+                          >
+                            {day ? (
+                              <>
+                                {isCurrentDate(day) && (
+                                  <div className="absolute top-1 left-1 w-8 h-8 bg-red-500 rounded-full text-white flex items-center justify-center">
+                                    {day.getDate()}
+                                  </div>
+                                )}
+                                {!isCurrentDate(day) && <div className="absolute top-2 left-2">{day.getDate()}</div>}
+                                {/* Show events for the day */}
+                                {eventsForDay.length > 0 && (
+                                  <div className="absolute bottom-0 left-0 right-0 space-y-2 text-white p-1 text-xs">
+                                    {eventsForDay.map((event, index) => {
+                                      const eventColor = usedColors[event.name] || getRandomColor();
+                                      usedColors[event.name] = eventColor;
+
+                                      return (
+                                        <div key={index} className={`text-left p-1`} style={{ backgroundColor: eventColor }}>
+                                          {event.name}
+                                          <br />
+                                          {event.invitees}
+                                          <br />
+                                          {formatTimeIn12Hour(event.time)}
+                                          <div>
+                                            {/* Update Button */}
+                                            <button onClick={() => handleUpdateEvent(event)}>Update</button>
+                                            {/* Delete Button */}
+                                            <button onClick={() => handleDeleteEvent(event)}>Delete</button>
+                                          </div>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                )}
+                              </>
+                            ) : ''}
+                          </td>
+                        );
+                      })}
                     </tr>
                   ) : null
                 ))}

@@ -6,7 +6,6 @@ const Popup = ({ selectedDate, onClose, onSave }) => {
   const [invitees, setInvitees] = useState('');
 
   const handleSave = () => {
-    // Save to localStorage or send to the server
     const event = {
       date: selectedDate,
       name,
@@ -20,7 +19,7 @@ const Popup = ({ selectedDate, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
-      <div className="bg-white text-black dark:bg-light-primary dark:text-white shadow-md shadow-gray-500 dark:shadow-gray-200 p-8 rounded-lg">
+      <div className="bg-white text-black shadow-md shadow-gray-500 dark:shadow-gray-200 p-8 rounded-lg">
         <h2 className="text-2xl font-bold mb-4">New Event</h2>
         <label className="block mb-2">
           Name
@@ -42,13 +41,13 @@ const Popup = ({ selectedDate, onClose, onSave }) => {
         </label>
         <div className="flex space-x-3 justify-end pt-3">
           <button
-            className="border border-red-500 text-red-500 dark:text-white px-4 py-2 rounded hover:bg-red-600 hover:text-white"
+            className="border border-red-500 text-red-500 px-4 py-2 rounded hover:bg-red-600 hover:text-white"
             onClick={onClose}
           >
             Close
           </button>
           <button
-            className="border border-green-400 text-green-400 dark:text-white px-4 py-2 rounded hover:bg-green-400 hover:text-white"
+            className="border border-green-600 text-green-600 px-4 py-2 rounded hover:bg-green-600 hover:text-white"
             onClick={handleSave}
           >
             Save
