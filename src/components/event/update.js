@@ -20,7 +20,7 @@ const UpdateEventPopup = ({ event, onUpdate, onClose }) => {
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      handleSave();
+      handleUpdate();
     }
   };
 
