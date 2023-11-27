@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
 
-const Popup = ({ selectedDate, onClose, onSave }) => {
-  const [name, setName] = useState('');
-  const [time, setTime] = useState('');
-  const [invitees, setInvitees] = useState('');
+const UpdateEventPopup = ({ event, onUpdate, onClose }) => {
+  console.log('Update popup rendered!');
+  const [eventName, setEventName] = useState(event.name);
+  const [invitees, setInvitees] = useState(event.invitees);
+  const [eventTime, setEventTime] = useState(event.time);
 
-  const handleSave = () => {
-    const event = {
-      date: selectedDate,
-      name,
-      time,
+  const handleUpdate = () => {
+    const updatedEvent = {
+      ...event,
+      name: eventName,
       invitees,
+      time: eventTime,
     };
 
-    onSave(event);
+    onUpdate(updatedEvent);
     onClose();
   };
 
@@ -26,17 +27,17 @@ const Popup = ({ selectedDate, onClose, onSave }) => {
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20">
       <div className="bg-white text-black shadow-md shadow-gray-500 dark:shadow-gray-200 p-8 rounded-lg">
-        <h2 className="text-2xl font-bold mb-4">New Event</h2>
+        <h2 className="text-2xl font-bold mb-4">Update Event</h2>
         <label className="block mb-2">
           Name
           <input
-            type="text" value={name} onChange={(e) => setName(e.target.value)} onKeyUp={handleKeyPress}
+            type="text" value={eventName} onChange={(e) => setEventName(e.target.value)} onKeyUp={handleKeyPress}
             className="mt-1 shadow appearance-none border rounded p-4 leading-tight focus:outline-none focus:shadow-outline dark:text-black w-full" />
         </label>
         <label className="block mb-2">
           Time (12 hour format)
           <input
-            type="time" value={time} onChange={(e) => setTime(e.target.value)} onKeyUp={handleKeyPress}
+            type="time" value={eventTime} onChange={(e) => setEventTime(e.target.value)} onKeyUp={handleKeyPress}
             className="mt-1 shadow appearance-none border rounded p-4 leading-tight focus:outline-none focus:shadow-outline dark:text-black w-full" />
         </label>
         <label className="block mb-4">
@@ -54,9 +55,9 @@ const Popup = ({ selectedDate, onClose, onSave }) => {
           </button>
           <button
             className="border border-green-600 text-green-600 px-4 py-2 rounded hover:bg-green-600 hover:text-white"
-            onClick={handleSave}
+            onClick={handleUpdate}
           >
-            Save
+            Update
           </button>
         </div>
       </div>
@@ -64,4 +65,4 @@ const Popup = ({ selectedDate, onClose, onSave }) => {
   );
 };
 
-export default Popup;
+export default UpdateEventPopup;
